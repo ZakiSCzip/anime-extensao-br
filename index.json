@@ -2,10 +2,10 @@
   {
     "name": "Aniyomi: Dattebayo BR",
     "pkg": "eu.kanade.tachiyomi.animeextension.pt.dattebayobr",
-    "apk": "aniyomi-pt.dattebayobr-v14.19-release.apk",
+    "apk": "aniyomi-pt.dattebayobr-v14.11-release.apk",
     "lang": "pt-BR",
-    "code": 19,
-    "version": "14.19",
+    "code": 11,
+    "version": "14.11",
     "nsfw": 0,
     "sources": [
       {
