@@ -23,12 +23,15 @@ class Provider {
         const results: SearchResult[] = []
 
         $("div.ultimosAnimesHomeItem").each((_: any, el: any) => {
-            const link = el.find("a").attr("href") || ""
+            const href = el.find("a").attr("href") || ""
+            const path = this.extractPath(href)
+            if (!path) return
+
             const title = el.find(".ultimosAnimesHomeItemInfosNome").text().trim() || "Sem título"
             results.push({
-                id: link.replace(/^\//, ""),
+                id: path,
                 title: title,
-                url: `${this.baseUrl}${link}`,
+                url: `${this.baseUrl}/${path}`,
                 subOrDub: "sub",
             })
         })
@@ -39,13 +42,15 @@ class Provider {
     async findEpisodes(id: string): Promise<EpisodeDetails[]> {
         const episodes: EpisodeDetails[] = []
         const seen = new Set<string>()
-        const basePath = `${this.baseUrl}/${id.replace(/^\//, "").replace(/\/page\/\d+$/, "")}`
+        const cleanId = id.replace(/^\//, "").replace(/\/page\/\d+$/, "")
+        const basePath = `${this.baseUrl}/${cleanId}`
 
         for (let page = 1; page <= 50; page++) {
             const pageUrl = page === 1 ? basePath : `${basePath}/page/${page}`
             let html: string
             try {
                 const resp = await fetch(pageUrl, { headers: this.requestHeaders() })
+                if (!resp.ok) break
                 html = await resp.text()
             } catch {
                 break
@@ -57,9 +62,9 @@ class Provider {
 
             let addedAny = false
             items.each((_: any, el: any) => {
-                const link = el.find("a").attr("href") || ""
-                if (!link || seen.has(link)) return
-                seen.add(link)
+                const href = el.find("a").attr("href") || ""
+                if (!href || seen.has(href)) return
+                seen.add(href)
 
                 const rawNum = el.find(".ultimosEpisodiosHomeItemInfosNum").text()
                     .replace(/Episódio/gi, "").trim()
@@ -69,11 +74,15 @@ class Provider {
                 const name = el.find(".ultimosEpisodiosHomeItemInfosNome").text().trim()
                     || `Episódio ${rawNum}`
 
+                const epUrl = href.startsWith("http")
+                    ? href
+                    : `${this.baseUrl}${href}`
+
                 episodes.push({
-                    id: link.replace(/^\//, ""),
+                    id: href.replace(/^\//, ""),
                     number: number,
                     title: name,
-                    url: `${this.baseUrl}${link}`,
+                    url: epUrl,
                 })
                 addedAny = true
             })
@@ -146,6 +155,18 @@ class Provider {
             },
             videoSources: videoSources,
         }
+    }
+
+    private extractPath(href: string): string {
+        if (!href) return ""
+        if (href.startsWith("http")) {
+            try {
+                return new URL(href).pathname.replace(/^\//, "")
+            } catch {
+                return ""
+            }
+        }
+        return href.replace(/^\//, "")
     }
 
     private extractVideoUrl(container: any): string {
