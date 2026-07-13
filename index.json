@@ -1,19 +1,15 @@
 [
   {
-    "name": "Aniyomi: Dattebayo BR",
-    "pkg": "eu.kanade.tachiyomi.animeextension.pt.dattebayobr",
-    "apk": "aniyomi-pt.dattebayobr-v14.11-release.apk",
+    "id": "dattebayobr",
+    "name": "Dattebayo BR",
+    "description": "Provedor de streaming online do Dattebayo BR para Seanime",
+    "manifestURI": "https://raw.githubusercontent.com/ZakiSCzip/anime-extensao-br/repo/seanime/manifest.json",
+    "version": "1.0.0",
+    "author": "ZakiSCzip",
+    "type": "onlinestream-provider",
+    "language": "typescript",
     "lang": "pt-BR",
-    "code": 11,
-    "version": "14.11",
-    "nsfw": 0,
-    "sources": [
-      {
-        "name": "Dattebayo BR",
-        "lang": "pt-BR",
-        "id": "dattebayobr",
-        "baseUrl": "https://www.dattebayo-br.com"
-      }
-    ]
+    "payload": "",
+    "payloadURI": "https://raw.githubusercontent.com/ZakiSCzip/anime-extensao-br/repo/seanime/provider.ts"
   }
 ]
