@@ -1,9 +1,8 @@
 /// <reference path="./online-streaming-provider.d.ts" />
 
 class Provider {
-    baseUrl = "https://www.dattebayo-br.com"
-    adsEndpoint = "https://ads.animeyabu.net"
-    userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+    private baseUrl = "https://www.dattebayo-br.com"
+    private userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
 
     getSettings(): Settings {
         return {
@@ -16,27 +15,34 @@ class Provider {
         const query = opts.query.trim()
         if (!query) return []
 
-        const url = `${this.baseUrl}/busca?busca=${encodeURIComponent(query)}&page=1`
-        const resp = await fetch(url, { headers: this.requestHeaders() })
-        const html = await resp.text()
-        const $ = LoadDoc(html)
-        const results: SearchResult[] = []
+        try {
+            const url = `${this.baseUrl}/busca?busca=${encodeURIComponent(query)}&page=1`
+            const resp = await fetch(url, { headers: this.requestHeaders() })
+            if (!resp.ok) return []
 
-        $("div.ultimosAnimesHomeItem").each((_: any, el: any) => {
-            const href = el.find("a").attr("href") || ""
-            const path = this.extractPath(href)
-            if (!path) return
+            const html = await resp.text()
+            const $ = LoadDoc(html)
+            const results: SearchResult[] = []
 
-            const title = el.find(".ultimosAnimesHomeItemInfosNome").text().trim() || "Sem título"
-            results.push({
-                id: path,
-                title: title,
-                url: `${this.baseUrl}/${path}`,
-                subOrDub: "sub",
+            $("div.ultimosAnimesHomeItem").each((_: any, el: any) => {
+                const href = el.find("a").attr("href") || ""
+                const path = this.extractPath(href)
+                if (!path) return
+
+                const title = el.find(".ultimosAnimesHomeItemInfosNome").text().trim() || "Sem título"
+                results.push({
+                    id: path,
+                    title: title,
+                    url: `${this.baseUrl}/${path}`,
+                    subOrDub: "sub",
+                })
             })
-        })
 
-        return results
+            return results
+        } catch (e) {
+            console.error("Search failed:", e)
+            return []
+        }
     }
 
     async findEpisodes(id: string): Promise<EpisodeDetails[]> {
@@ -45,115 +51,129 @@ class Provider {
         const cleanId = id.replace(/^\//, "").replace(/\/page\/\d+$/, "")
         const basePath = `${this.baseUrl}/${cleanId}`
 
-        for (let page = 1; page <= 50; page++) {
-            const pageUrl = page === 1 ? basePath : `${basePath}/page/${page}`
-            let html: string
-            try {
-                const resp = await fetch(pageUrl, { headers: this.requestHeaders() })
-                if (!resp.ok) break
-                html = await resp.text()
-            } catch {
-                break
-            }
+        try {
+            for (let page = 1; page <= 30; page++) {
+                const pageUrl = page === 1 ? basePath : `${basePath}/page/${page}`
+                let html: string
 
-            const $ = LoadDoc(html)
-            const items = $("div.ultimosEpisodiosHomeItem")
-            if (items.length === 0) break
+                try {
+                    const resp = await fetch(pageUrl, { headers: this.requestHeaders() })
+                    if (!resp.ok) break
+                    html = await resp.text()
+                } catch {
+                    break
+                }
 
-            let addedAny = false
-            items.each((_: any, el: any) => {
-                const href = el.find("a").attr("href") || ""
-                if (!href || seen.has(href)) return
-                seen.add(href)
+                const $ = LoadDoc(html)
+                const items = $("div.ultimosEpisodiosHomeItem")
+                if (items.length === 0) break
 
-                const rawNum = el.find(".ultimosEpisodiosHomeItemInfosNum").text()
-                    .replace(/Episódio/gi, "").trim()
-                const number = parseFloat(rawNum.replace(",", "."))
-                if (isNaN(number)) return
+                let addedAny = false
+                items.each((_: any, el: any) => {
+                    const href = el.find("a").attr("href") || ""
+                    if (!href || seen.has(href)) return
+                    seen.add(href)
 
-                const name = el.find(".ultimosEpisodiosHomeItemInfosNome").text().trim()
-                    || `Episódio ${rawNum}`
+                    const rawNum = el.find(".ultimosEpisodiosHomeItemInfosNum").text()
+                        .replace(/Episódio/gi, "").trim()
+                    const number = parseFloat(rawNum.replace(",", "."))
+                    if (isNaN(number)) return
 
-                const epUrl = href.startsWith("http")
-                    ? href
-                    : `${this.baseUrl}${href}`
+                    const name = el.find(".ultimosEpisodiosHomeItemInfosNome").text().trim()
+                        || `Episódio ${rawNum}`
 
-                episodes.push({
-                    id: href.replace(/^\//, ""),
-                    number: number,
-                    title: name,
-                    url: epUrl,
+                    const epUrl = href.startsWith("http")
+                        ? href
+                        : `${this.baseUrl}${href}`
+
+                    episodes.push({
+                        id: href.replace(/^\//, ""),
+                        number: number,
+                        title: name,
+                        url: epUrl,
+                    })
+                    addedAny = true
                 })
-                addedAny = true
-            })
 
-            if (!addedAny) break
+                if (!addedAny) break
+            }
+        } catch (e) {
+            console.error("Failed to fetch episodes:", e)
         }
 
-        episodes.sort((a, b) => b.number - a.number)
+        episodes.sort((a, b) => a.number - b.number)
         return episodes
     }
 
     async findEpisodeServer(episode: EpisodeDetails, _server: string): Promise<EpisodeServer> {
-        const resp = await fetch(episode.url, { headers: this.requestHeaders() })
-        const html = await resp.text()
-        const $ = LoadDoc(html)
+        try {
+            const resp = await fetch(episode.url, { headers: this.requestHeaders() })
+            if (!resp.ok) {
+                throw new Error(`Failed to fetch episode page: ${resp.status}`)
+            }
 
-        interface TabInfo {
-            quality: string
-            rawUrl: string
-        }
+            const html = await resp.text()
+            const $ = LoadDoc(html)
 
-        const tabs: TabInfo[] = []
+            interface TabInfo {
+                quality: string
+                rawUrl: string
+            }
 
-        $("div.AbasBox div.Aba").each((_: any, tab: any) => {
-            const name = tab.text().trim().toUpperCase()
-            const attr = tab.attr("aba-type")
-            if (!attr) return
+            const tabs: TabInfo[] = []
 
-            const keep = name.includes("FULLHD") || name.includes("FULL HD")
-                || name.includes("1080") || name.includes("HD")
-                || name.includes("720") || name.includes("SD")
-                || name.includes("480")
-            if (!keep) return
+            $("div.AbasBox div.Aba").each((_: any, tab: any) => {
+                const name = tab.text().trim().toUpperCase()
+                const attr = tab.attr("aba-type")
+                if (!attr) return
 
-            const container = $(`#${attr}`)
-            if (container.length === 0) return
+                const keep = name.includes("FULLHD") || name.includes("FULL HD")
+                    || name.includes("1080") || name.includes("HD")
+                    || name.includes("720") || name.includes("SD")
+                    || name.includes("480")
+                if (!keep) return
 
-            let rawUrl = this.extractVideoUrl(container)
-            if (!rawUrl) return
-            if (rawUrl.startsWith("//")) rawUrl = "https:" + rawUrl
+                const container = $(`#${attr}`)
+                if (container.length === 0) return
 
-            tabs.push({
-                quality: this.decorateQuality(name),
-                rawUrl: rawUrl,
+                let rawUrl = this.extractVideoUrl($, container)
+                if (!rawUrl) return
+                if (rawUrl.startsWith("//")) rawUrl = "https:" + rawUrl
+
+                tabs.push({
+                    quality: this.decorateQuality(name),
+                    rawUrl: rawUrl,
+                })
             })
-        })
 
-        const videoSources: VideoSource[] = await Promise.all(
-            tabs.map(async (tab) => {
+            const videoSources: VideoSource[] = []
+
+            for (const tab of tabs) {
                 let finalUrl = tab.rawUrl
                 if (!finalUrl.includes("X-Amz-Signature")) {
                     const suffix = await this.resolveAdsSuffix(finalUrl)
                     if (suffix) finalUrl += suffix
                 }
-                return {
+                videoSources.push({
                     url: finalUrl,
                     type: finalUrl.endsWith(".m3u8") ? "m3u8" : "mp4",
                     quality: tab.quality,
                     subtitles: [],
-                }
-            })
-        )
+                })
+            }
 
-        return {
-            server: "Dattebayo BR",
-            headers: {
-                "Referer": episode.url,
-                "User-Agent": this.userAgent,
-                "Origin": this.baseUrl,
-            },
-            videoSources: videoSources,
+            return {
+                server: "Dattebayo BR",
+                headers: {
+                    "Referer": episode.url,
+                    "User-Agent": this.userAgent,
+                    "Origin": this.baseUrl,
+                },
+                videoSources: videoSources,
+            }
+        } catch (e) {
+            console.error("Failed to find episode server:", e)
+            throw e
         }
     }
 
@@ -169,7 +189,7 @@ class Provider {
         return href.replace(/^\//, "")
     }
 
-    private extractVideoUrl(container: any): string {
+    private extractVideoUrl($: any, container: any): string {
         const html = container.html() || ""
 
         const match = html.match(/var vid\s*=\s*['"](.*?)['"]/)
@@ -185,8 +205,8 @@ class Provider {
     }
 
     private async resolveAdsSuffix(vid: string): Promise<string> {
-        const url = `${this.adsEndpoint}?url=${encodeURIComponent(vid)}`
         try {
+            const url = `https://ads.animeyabu.net?url=${encodeURIComponent(vid)}`
             const resp = await fetch(url, {
                 headers: {
                     "Referer": `${this.baseUrl}/`,
@@ -203,7 +223,7 @@ class Provider {
                 }
             }
         } catch (e) {
-            console.error("Failed to resolve ads suffix", e)
+            console.error("Failed to resolve ads suffix:", e)
         }
         return ""
     }
@@ -230,7 +250,6 @@ class Provider {
             "User-Agent": this.userAgent,
             "Accept": "*/*",
             "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
-            "X-Requested-With": "XMLHttpRequest",
         }
     }
 }
