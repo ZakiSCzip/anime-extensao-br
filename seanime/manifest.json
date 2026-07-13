@@ -1,13 +1,15 @@
-{
-  "id": "dattebayobr",
-  "name": "Dattebayo BR",
-  "description": "Provedor de streaming online do Dattebayo BR para Seanime",
-  "manifestURI": "https://raw.githubusercontent.com/ZakiSCzip/anime-extensao-br/repo/seanime/manifest.json",
-  "version": "1.0.0",
-  "author": "ZakiSCzip",
-  "type": "onlinestream-provider",
-  "language": "typescript",
-  "lang": "pt-BR",
-  "payload": "",
-  "payloadURI": "https://raw.githubusercontent.com/ZakiSCzip/anime-extensao-br/repo/seanime/provider.ts"
-}
+[
+  {
+    "id": "dattebayobr",
+    "name": "Dattebayo BR",
+    "description": "Provedor de streaming online do Dattebayo BR para Seanime",
+    "manifestURI": "https://raw.githubusercontent.com/ZakiSCzip/anime-extensao-br/repo/seanime/manifest.json",
+    "version": "1.0.0",
+    "author": "ZakiSCzip",
+    "type": "onlinestream-provider",
+    "language": "typescript",
+    "lang": "pt-BR",
+    "payload": "",
+    "payloadURI": "https://raw.githubusercontent.com/ZakiSCzip/anime-extensao-br/repo/seanime/provider.ts"
+  }
+]
