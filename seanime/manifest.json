@@ -8,5 +8,6 @@
   "type": "onlinestream-provider",
   "language": "typescript",
   "lang": "pt-BR",
+  "payload": "",
   "payloadURI": "https://raw.githubusercontent.com/ZakiSCzip/anime-extensao-br/repo/seanime/provider.ts"
 }
