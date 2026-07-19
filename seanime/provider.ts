@@ -13,8 +13,12 @@ class Provider {
   }
 
   async search(opts: SearchOptions): Promise<SearchResult[]> {
-    const query = opts.query.trim();
-    if (!query) return [];
+    const rawQuery = opts.query.trim();
+    if (!rawQuery) return [];
+
+    // Limit query to first three words to avoid overlong titles confusing the
+    // remote search (e.g. apps sending very long generated titles).
+    const query = this.limitTitleToThreeWords(rawQuery);
 
     try {
       const url = `${this.baseUrl}/busca?busca=${encodeURIComponent(query)}&page=1`;
