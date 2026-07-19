@@ -77,7 +77,7 @@ class DattebayoBR : AnimeHttpSource() {
         page: Int,
         query: String,
         filters: AnimeFilterList,
-    ): Observable<AnimesPage> = Observable.fromCallable { parallelSearch(query, page) }
+    ): Observable<AnimesPage> = Observable.fromCallable { parallelSearch(truncateSearchQuery(query), page) }
 
     private fun parallelSearch(rawQuery: String, page: Int): AnimesPage {
         val cleaned = rawQuery.trim()
@@ -180,7 +180,7 @@ class DattebayoBR : AnimeHttpSource() {
     }
 
     override fun searchAnimeRequest(page: Int, query: String, filters: AnimeFilterList): Request =
-        buildSearchRequest(query, page)
+        buildSearchRequest(truncateSearchQuery(query), page)
 
     override fun searchAnimeParse(response: Response): AnimesPage {
         val document = response.asJsoup()
@@ -497,5 +497,10 @@ class DattebayoBR : AnimeHttpSource() {
         )
 
         private val JSON_MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
+
+        private fun truncateSearchQuery(query: String): String {
+            val tokens = query.trim().split(WHITESPACE).filter { it.isNotBlank() }
+            return if (tokens.size <= 3) query.trim() else tokens.take(3).joinToString(" ")
+        }
     }
 }
