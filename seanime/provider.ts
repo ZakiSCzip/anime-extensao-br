@@ -195,10 +195,10 @@ class Provider {
       throw e;
     }
   }
-    private limitTitleToThreeWords(title: string): string {
-        const words = title.trim().split(/\s+/)
-        return words.slice(0, 3).join(" ")
-    }
+  private limitTitleToThreeWords(title: string): string {
+    const words = title.trim().split(/\s+/);
+    return words.slice(0, 3).join(" ");
+  }
   private extractPath(href: string): string {
     if (!href) return "";
     if (href.startsWith("http")) {
