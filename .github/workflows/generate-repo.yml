@@ -45,11 +45,19 @@ jobs:
             exit 1
           fi
           mkdir -p repo-branch/apk
-          curl -sL -H "Authorization: Bearer $GH_TOKEN" \
+          rm -rf repo-branch/apk/*.apk
+          APK_NAME=""
+          for url in $(curl -sL -H "Authorization: Bearer $GH_TOKEN" \
             "https://api.github.com/repos/${{ github.repository }}/releases/tags/$TAG" \
-            | jq -r '.assets[] | select(.name | endswith(".apk")) | .browser_download_url' \
-            | while read url; do curl -sL -o "repo-branch/apk/$(basename $url)" "$url"; done
-          APK_NAME=$(ls repo-branch/apk/*.apk 2>/dev/null | head -1 | xargs basename)
+            | jq -r '.assets[] | select(.name | endswith(".apk")) | .browser_download_url'); do
+            name=$(basename "$url")
+            curl -sL -o "repo-branch/apk/$name" "$url"
+            APK_NAME="$name"
+          done
+          if [ -z "$APK_NAME" ]; then
+            echo "Nenhum APK encontrado no release $TAG"
+            exit 1
+          fi
           echo "apk_name=$APK_NAME" >> $GITHUB_OUTPUT
           echo "tag=$TAG" >> $GITHUB_OUTPUT
 
