@@ -259,16 +259,16 @@ class Provider {
       upper.includes("FULL HD") ||
       upper.includes("1080")
     ) {
-      return "FULLHD 1080p";
+      return "1080p";
     }
-    if (upper.includes("HD") || upper.includes("720")) {
-      return "HD 720p";
+    if (upper.includes("720")) {
+      return "720p";
     }
-    if (upper.includes("SD") || upper.includes("480")) {
-      return "SD 480p";
+    if (upper.includes("480")) {
+      return "480p";
     }
     if (upper.includes("360")) {
-      return "SD 360p";
+      return "360p";
     }
     return tabName;
   }
