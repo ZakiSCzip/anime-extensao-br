@@ -7,7 +7,7 @@
   "type": "scraper",
   "language": "javascript",
   "repositoryUrl": "https://raw.githubusercontent.com/ZakiSCzip/anime-extensao-br/repo",
-  "mainFile": "nuvio/scraper.js",
+  "mainFile": "scraper.js",
   "scrapers": [
     {
       "id": "dattebayobr",
