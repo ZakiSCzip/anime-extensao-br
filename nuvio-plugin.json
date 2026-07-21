@@ -1,0 +1,19 @@
+{
+  "id": "dattebayobr-plugin",
+  "name": "Dattebayo BR",
+  "version": "1.0.0",
+  "description": "Plugin de anime Dattebayo BR para NuvioTV",
+  "author": "ZakiSCzip",
+  "type": "scraper",
+  "language": "javascript",
+  "repositoryUrl": "https://raw.githubusercontent.com/ZakiSCzip/anime-extensao-br/repo",
+  "mainFile": "nuvio/scraper.js",
+  "scrapers": [
+    {
+      "id": "dattebayobr",
+      "name": "Dattebayo BR",
+      "baseUrl": "https://www.dattebayo-br.com",
+      "lang": "pt-BR"
+    }
+  ]
+}
