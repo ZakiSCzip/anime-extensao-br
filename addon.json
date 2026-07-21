@@ -1,0 +1,16 @@
+{
+  "id": "dattebayobr.anime.extensao",
+  "version": "1.0.0",
+  "name": "Dattebayo BR Anime",
+  "description": "Plugin de anime Dattebayo BR para NuvioTV",
+  "types": ["series"],
+  "resources": ["catalog", "meta", "stream", "search"],
+  "idPrefixes": ["dattebayobr:"],
+  "catalogs": [
+    {
+      "type": "series",
+      "id": "dattebayobr_animes",
+      "name": "Animes Dattebayo BR"
+    }
+  ]
+}
