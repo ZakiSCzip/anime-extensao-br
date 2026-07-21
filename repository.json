@@ -1,0 +1,30 @@
+{
+  "id": "anime-extensao-br-repo",
+  "name": "Anime Extensão BR",
+  "description": "Repositório de plugins e extensões de anime para brasileiros",
+  "version": "1.0.0",
+  "repositoryUrl": "https://github.com/ZakiSCzip/anime-extensao-br",
+  "author": "ZakiSCzip",
+  "plugins": [
+    {
+      "id": "dattebayobr-plugin",
+      "name": "Dattebayo BR",
+      "version": "1.0.0",
+      "description": "Plugin de anime Dattebayo BR para NuvioTV",
+      "author": "ZakiSCzip",
+      "type": "scraper",
+      "language": "javascript",
+      "url": "https://raw.githubusercontent.com/ZakiSCzip/anime-extensao-br/repo/scraper.js",
+      "manifest": "https://raw.githubusercontent.com/ZakiSCzip/anime-extensao-br/repo/nuvio-plugin.json",
+      "sources": [
+        {
+          "id": "dattebayobr",
+          "name": "Dattebayo BR",
+          "baseUrl": "https://www.dattebayo-br.com",
+          "lang": "pt-BR",
+          "type": "scraper"
+        }
+      ]
+    }
+  ]
+}
